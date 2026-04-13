@@ -1,61 +1,97 @@
-# Descarga Masiva CFDI para Google Chrome
+# CFDI Batch
 
-Descarga masivamente los CFDI (XML y PDF) del [SAT México](https://sat.gob.mx/)
+Descarga masiva de CFDI (XML y PDF) del [SAT México](https://portalcfdi.facturaelectronica.sat.gob.mx).
 
-![portada](https://user-images.githubusercontent.com/4065733/44919085-36755880-ad02-11e8-97a0-c6620ab20bf8.png)
+Basado en la extensión original de [Eduardo Aranda Hernández](https://github.com/eduardoarandah/DescargaMasivaCFDIChrome), actualizada y mejorada.
 
-# Instalación
+> **Créditos y derechos**: Este proyecto es un fork del trabajo original de [Ing. Eduardo Aranda Hernández](https://eduardoarandah.github.io/). Todos los derechos sobre el concepto y código original le pertenecen a él. Si esta extensión te ha sido útil, considera [hacerle una donación](https://eduardoarandah.github.io/).
 
-### Instala la extensión **GRATIS** desde [la chrome web store](https://chrome.google.com/webstore/detail/descarga-masiva-facturas/cmcidfkdmfopijnadkbdbhknfkjodmec)
+---
 
-# Cómo Funciona
+## Instalación
 
-### 1) Click en el icono
+1. Descarga o clona este repositorio
+2. Abre Chrome y ve a `chrome://extensions/`
+3. Activa **Developer mode** (interruptor arriba a la derecha)
+4. Click en **Load unpacked**
+5. Selecciona la carpeta `cfdi-batch`
 
-![icono](https://user-images.githubusercontent.com/4065733/38109726-5899f7de-3356-11e8-8fed-04dfda6c5c77.png)
+Para actualizar después de cambios: click en el botón **↺** en la tarjeta de la extensión.
 
-### 2) Ir al SAT
+---
 
-![manual1](https://user-images.githubusercontent.com/4065733/44919090-3a08df80-ad02-11e8-9f19-8af0c53f569b.png)
+## Cómo usar
 
-### 3) Puedes descargar emitidas o recibidas
+1. Ve al portal del SAT: `https://portalcfdi.facturaelectronica.sat.gob.mx`
+2. Inicia sesión y busca tus facturas (filtrando por mes y año)
+3. Click en el ícono de la extensión
+4. Click en **Descargar PDF** (o XML según necesites)
+5. Los archivos se descargan automáticamente uno por uno
 
-![manual2](https://user-images.githubusercontent.com/4065733/44919091-3aa17600-ad02-11e8-8727-13d0fc40784a.png)
+### Descarga de múltiples meses
 
-### 4) Selecciona el periodo
+No tienes que esperar a que termine un mes para iniciar el siguiente:
 
-![manual3](https://user-images.githubusercontent.com/4065733/44919092-3aa17600-ad02-11e8-8331-4b9706f96021.png)
+1. Busca enero → click **Descargar PDF** → empieza a descargar
+2. Sin esperar, busca febrero → click **Descargar PDF** → se agrega a la cola
+3. La extensión termina enero completo y luego sigue con febrero automáticamente
 
-### 5) Click en el icono
+### Organización por carpetas
 
-![manual4](https://user-images.githubusercontent.com/4065733/44919093-3b3a0c80-ad02-11e8-8f3c-561765b571d3.png)
+Los archivos se guardan automáticamente en subcarpetas por año y mes dentro de tu carpeta de descargas:
 
-### 6) (OPCIONALMENTE) Puedes analizar las facturas en mi analizador
+```
+Descargas/
+  2024/
+    01/
+      CB671D07-...-99E6-BCF44D197088.pdf
+      34299D36-...-A4D9-390C78A65DE3.pdf
+    02/
+      ...
+    03/
+      ...
+```
 
-[https://github.com/eduardoarandah/AnalizadorCFDI](https://github.com/eduardoarandah/AnalizadorCFDI)
+---
 
-![manual5](https://user-images.githubusercontent.com/4065733/44919094-3b3a0c80-ad02-11e8-9b58-179629287198.png)
+## Comportamiento de la cola
 
-![manual6](https://user-images.githubusercontent.com/4065733/44919095-3bd2a300-ad02-11e8-9003-30cadc4edf71.png)
+- La cola corre en el **background** — cerrar el popup NO cancela las descargas
+- El ícono de la extensión muestra cuántos archivos faltan en la cola
+- Al terminar, el ícono muestra **OK** en verde
+- **Limpiar cola** resetea todo
 
-# Programación de sistemas
+### Progreso por mes
 
-Para proyectos de programación escribe a: eduardoarandah@gmail.com
+El popup muestra un desglose en tiempo real por cada mes encolado:
 
-# Si deseas contribuir
+```
+45 / 200 descargados
+155 restantes en cola
 
-**He invertido mi tiempo realizado este proyecto con la intención de ayudar a todos.**
+Enero 2024     45 / 100  ████████░░
+Febrero 2024    0 / 100  ░░░░░░░░░░
+```
 
-**Si te ha hecho la vida más fácil, puedes contribuir con una donación**
+- Cada mes tiene su propia barra de progreso
+- Al completarse un mes, su fila se pone en verde
+- El desglose se oculta automáticamente cuando no hay cola activa
 
-Ve a esta página y haz click en "donar"
+---
 
-[https://eduardoarandah.github.io/](https://eduardoarandah.github.io/)
+## Cambios respecto al original
 
-![Eduardo Aranda Hernández](https://user-images.githubusercontent.com/4065733/38109725-587af320-3356-11e8-941a-7215489a9286.png)
+| | Original (v0.23) | CFDI Batch (v0.24) |
+|---|---|---|
+| Manifest | v2 (obsoleto) | v3 |
+| Downloads | Corren en el popup — cerrar = cancelar | Corren en background — siempre persisten |
+| Multi-mes | Hay que esperar a que termine cada mes | Se pueden encolar varios meses sin esperar |
+| Carpetas | Todo en la raíz de Descargas | Subcarpetas por `año/mes/` automáticamente |
+| Progreso | Solo visible con el popup abierto | Badge en el ícono siempre visible |
+| Desglose | Sin desglose | Progreso por mes con barra visual |
 
-_Ing. Eduardo Aranda Hernández_
+---
 
-# Versiones
+## Pendiente
 
--   0.22 Ahora se ejecuta una descarga cada segundo, para evitar sobrecargas
+- [ ] Persistencia de cola (guardar en storage para reanudar tras reinicio del navegador)

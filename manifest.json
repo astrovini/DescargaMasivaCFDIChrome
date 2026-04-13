@@ -1,12 +1,14 @@
 {
-	"name": "Descarga Masiva Facturas XML CFDI SAT México",
-	"description": "Descarga masivamente los CFDI (XML y PDF) del SAT México",
-	"version": "0.23",
-	"minimum_chrome_version": "16.0.884",
-	"permissions": ["downloads", "activeTab"],
-	"browser_action": {
+	"name": "CFDI Batch",
+	"description": "Descarga masiva de CFDI (XML y PDF) del SAT México",
+	"version": "0.24",
+	"manifest_version": 3,
+	"permissions": ["downloads", "activeTab", "storage", "scripting"],
+	"background": {
+		"service_worker": "background.js"
+	},
+	"action": {
 		"default_icon": "icon.png",
 		"default_popup": "popup.html"
-	},
-	"manifest_version": 2
+	}
 }

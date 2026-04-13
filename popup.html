@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>Descarga Masiva SAT</title>
+    <title>CFDI Batch</title>
 
     <link
       rel="stylesheet"
@@ -18,7 +18,7 @@
   </head>
   <body>
     <div class="container text-center">
-      <h4 class="py-2">Descarga Masiva SAT</h4>
+      <h4 class="py-2">CFDI Batch</h4>
 
       <div class="py-2">
         <button class="btn btn-info btn-sm" id="iralsat">Ir al SAT</button>
@@ -42,7 +42,19 @@
       </div>
       <div class="py-2">
         <div id="status"></div>
+        <div class="mt-1">
+          <button class="btn btn-secondary btn-sm" id="pausar" style="display:none;">
+            &#9646;&#9646; Pausar
+          </button>
+          <button class="btn btn-warning btn-sm" id="reanudar" style="display:none;">
+            &#9654; Reanudar
+          </button>
+          <button class="btn btn-link btn-sm text-muted" id="limpiar" style="display:none;font-size:11px;">
+            Limpiar cola
+          </button>
+        </div>
       </div>
+      <div id="grupos" style="display:none;"></div>
       <div class="py-2">
         <button class="btn btn-default btn-sm" id="manual">
           Manual de uso

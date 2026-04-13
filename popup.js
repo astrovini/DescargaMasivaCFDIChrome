@@ -1,111 +1,114 @@
-var allLinks = [];
+window.onload = function () {
+    document.getElementById("descargarxml").onclick = function () {
+        chrome.runtime.sendMessage({ action: "START_XML" });
+    };
+    document.getElementById("descargarpdf").onclick = function () {
+        chrome.runtime.sendMessage({ action: "START_PDF" });
+    };
+    document.getElementById("pausar").onclick = function () {
+        chrome.runtime.sendMessage({ action: "PAUSE" });
+    };
+    document.getElementById("reanudar").onclick = function () {
+        chrome.runtime.sendMessage({ action: "RESUME" });
+    };
+    document.getElementById("limpiar").onclick = function () {
+        chrome.runtime.sendMessage({ action: "CLEAR" });
+    };
 
-function descargarxml() {
-    document.getElementById("status").textContent = "Descargando XML...";
-    // Hacemos una copia de allLinks
-    // luego ejecutamos un intervalo cada 1000 milisegundos para extraer un elemento del array y descargarlo
-    // cuando no haya elementos, cancelar el intervalo.
-    //los xml están en el array en posición 0
-    var urls = allLinks[0];
-    var nombres = allLinks[2];
-    var interval = setInterval(function() {
-        var url = urls.shift();
-        var nombre = nombres.shift();
-        if (url) {
-            //Descargar el archivo
-            chrome.downloads.download(
-                {
-                    url: url,
-                    filename: nombre + ".xml",
-                },
-                function(id) {},
-            );
-        } else {
-            clearInterval(this);
+    document.getElementById("analizar").onclick = function () {
+        chrome.tabs.create({ url: "https://analizador-cfdi.netlify.app/" });
+    };
+    document.getElementById("iralsat").onclick = function () {
+        chrome.tabs.create({ url: "https://portalcfdi.facturaelectronica.sat.gob.mx" });
+    };
+    document.getElementById("enlace").onclick = function () {
+        chrome.tabs.create({ url: "https://eduardoarandah.github.io/" });
+    };
+    document.getElementById("manual").onclick = function () {
+        chrome.tabs.create({ url: "https://github.com/eduardoarandah/DescargaMasivaCFDIChrome" });
+    };
+
+    chrome.runtime.onMessage.addListener(function (message) {
+        if (message.event === "STATE_UPDATE") {
+            renderState(message.state);
         }
-    }, 1000);
-}
+    });
 
-function descargarpdf() {
-    document.getElementById("status").textContent = "Descargando PDF...";
-
-    // Hacemos una copia de allLinks
-    // luego ejecutamos un intervalo cada 1000 milisegundos para extraer un elemento del array y descargarlo
-    // cuando no haya elementos, cancelar el intervalo.
-    //los pdf están en el array en posición 1
-    var urls = allLinks[1];
-    var nombres = allLinks[2];
-    var interval = setInterval(function() {
-        var url = urls.shift();
-        var nombre = nombres.shift();
-        if (url) {
-            //Descargar el archivo
-            chrome.downloads.download(
-                {
-                    url: url,
-                    filename: nombre + ".pdf",
-                },
-                function(id) {},
-            );
-        } else {
-            clearInterval(this);
-        }
-    }, 1000);
-}
-//listener que recibe los elaces de send_links.js
-chrome.extension.onRequest.addListener(function(links) {
-    allLinks = links;
-    //cambiamos los textos de los botones
-    document.getElementById("cuenta-xml").innerText = allLinks[0].length;
-    document.getElementById("cuenta-pdf").innerText = allLinks[1].length;
-});
-
-window.onload = function() {
-    //botones
-    document.getElementById("descargarxml").onclick = descargarxml;
-    document.getElementById("descargarpdf").onclick = descargarpdf;
-
-    //enlaces
-    document.getElementById("analizar").onclick = function() {
-        chrome.tabs.create({
-            url: "https://analizador-cfdi.netlify.app/",
+    chrome.windows.getCurrent(function (currentWindow) {
+        chrome.tabs.query({ active: true, windowId: currentWindow.id }, function (activeTabs) {
+            var url = activeTabs[0].url;
+            if (url.startsWith("https://portalcfdi.facturaelectronica.sat.gob.mx")) {
+                chrome.scripting.executeScript({
+                    target: { tabId: activeTabs[0].id },
+                    files: ["inject.js"]
+                });
+            }
         });
-    };
-    document.getElementById("iralsat").onclick = function() {
-        chrome.tabs.create({
-            url: "https://portalcfdi.facturaelectronica.sat.gob.mx",
-        });
-    };
-    document.getElementById("enlace").onclick = function() {
-        chrome.tabs.create({
-            url: "https://eduardoarandah.github.io/",
-        });
-    };
-    document.getElementById("manual").onclick = function() {
-        chrome.tabs.create({
-            url: "https://github.com/eduardoarandah/DescargaMasivaCFDIChrome",
-        });
-    };
+    });
 
-    //esta función inyecta un JS a la tab activa para enviar los enlaces al listener
-    chrome.windows.getCurrent(function(currentWindow) {
-        chrome.tabs.query(
-            {
-                active: true,
-                windowId: currentWindow.id,
-            },
-            function(activeTabs) {
-                //checar si url contiene "https://portalcfdi.facturaelectronica.sat.gob.mx/"
-                var url = activeTabs[0].url;
-                var estamos_en_sat = url.startsWith(
-                    "https://portalcfdi.facturaelectronica.sat.gob.mx",
-                );
-                if (estamos_en_sat) {
-                    chrome.tabs.executeScript(activeTabs[0].id, {
-                        file: "inject.js",
-                    });
-                }
-            },
-        );
+    chrome.runtime.sendMessage({ action: "GET_STATE" }, function (state) {
+        if (state) renderState(state);
     });
 };
+
+function renderState(state) {
+    document.getElementById("cuenta-xml").innerText = state.pendingXml > 0 ? state.pendingXml : "";
+    document.getElementById("cuenta-pdf").innerText = state.pendingPdf > 0 ? state.pendingPdf : "";
+
+    var statusDiv   = document.getElementById("status");
+    var gruposDiv   = document.getElementById("grupos");
+    var pausarBtn   = document.getElementById("pausar");
+    var reanudarBtn = document.getElementById("reanudar");
+    var limpiarBtn  = document.getElementById("limpiar");
+    var remaining   = state.queueTotal - state.currentIndex;
+
+    // Ocultar todos los botones de acción por defecto
+    pausarBtn.style.display   = "none";
+    reanudarBtn.style.display = "none";
+    limpiarBtn.style.display  = "none";
+
+    if (state.status === "downloading") {
+        statusDiv.innerHTML =
+            "<strong>" + state.completed + " / " + state.queueTotal + "</strong> descargados" +
+            (state.failed > 0 ? " &nbsp;<span class='text-error'>" + state.failed + " errores</span>" : "") +
+            "<br><small>" + remaining + " restantes en cola</small>";
+        pausarBtn.style.display = "inline-block";
+
+    } else if (state.status === "paused") {
+        var reason = state.pauseReason === "session_expired"
+            ? "&#9888; Sesi&oacute;n expirada &mdash; vuelve a iniciar sesi&oacute;n en el SAT"
+            : "&#9646;&#9646; Cola pausada";
+        statusDiv.innerHTML =
+            "<span class='text-warning'>" + reason + "</span>" +
+            "<br><small>" + state.completed + " descargados &mdash; " + remaining + " restantes</small>";
+        reanudarBtn.style.display = "inline-block";
+        limpiarBtn.style.display  = "inline-block";
+
+    } else if (state.status === "done") {
+        statusDiv.innerHTML =
+            "&#10003; <strong>" + state.completed + "</strong> descargados" +
+            (state.failed > 0 ? " &nbsp;<span class='text-error'>" + state.failed + " errores</span>" : "");
+        limpiarBtn.style.display = "inline-block";
+
+    } else {
+        statusDiv.textContent    = "";
+        limpiarBtn.style.display = state.queueTotal > 0 ? "inline-block" : "none";
+    }
+
+    // Desglose por mes
+    if (state.groups && state.groups.length > 0) {
+        var html = state.groups.map(function (g) {
+            var pct  = g.total > 0 ? Math.round((g.done / g.total) * 100) : 0;
+            var done = g.done === g.total;
+            return "<div class='group-row" + (done ? " group-done" : "") + "'>" +
+                "<span class='group-label'>" + g.label + "</span>" +
+                "<span class='group-count'>" + g.done + " / " + g.total + "</span>" +
+                "<div class='group-bar'><div class='group-bar-fill' style='width:" + pct + "%'></div></div>" +
+                "</div>";
+        }).join("");
+        gruposDiv.innerHTML    = html;
+        gruposDiv.style.display = "block";
+    } else {
+        gruposDiv.style.display = "none";
+    }
+}
