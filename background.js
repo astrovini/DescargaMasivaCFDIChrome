@@ -97,10 +97,42 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         }
         return true;
 
+    } else if (message.action === "CANCEL_GROUP") {
+        cancelGroup(message.groupIndex);
+
     } else if (message.action === "CLEAR") {
         clearAll();
     }
 });
+
+function cancelGroup(groupIndex) {
+    var g = groups[groupIndex];
+    if (!g) return;
+    if (g.startIndex < currentIndex) return; // ya empezó, no se puede cancelar
+
+    // Quitar los items de la cola
+    queue.splice(g.startIndex, g.total);
+
+    // Ajustar startIndex de los grupos siguientes
+    for (var i = groupIndex + 1; i < groups.length; i++) {
+        groups[i].startIndex -= g.total;
+    }
+
+    groups.splice(groupIndex, 1);
+
+    // Si la cola quedó vacía o ya no hay nada pendiente
+    if (queue.length === 0) {
+        status = "idle";
+        isProcessing = false;
+    } else if (currentIndex >= queue.length) {
+        status = "done";
+        isProcessing = false;
+    }
+
+    saveState();
+    updateBadge();
+    notifyPopup({ event: "STATE_UPDATE", state: getState() });
+}
 
 function doPause(reason) {
     status = "paused";
@@ -118,6 +150,7 @@ function enqueue(type) {
 
     groups.push({
         label:      folderToLabel(folder),
+        type:       type,
         startIndex: queue.length,
         total:      urls.length
     });
@@ -178,9 +211,16 @@ function processNext() {
 }
 
 function getState() {
-    var groupProgress = groups.map(function (g) {
+    var groupProgress = groups.map(function (g, i) {
         var done = Math.max(0, Math.min(currentIndex, g.startIndex + g.total) - g.startIndex);
-        return { label: g.label, done: done, total: g.total };
+        return {
+            index:       i,
+            label:       g.label,
+            type:        g.type,
+            done:        done,
+            total:       g.total,
+            cancellable: g.startIndex >= currentIndex
+        };
     });
 
     return {

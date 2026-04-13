@@ -141,9 +141,28 @@ a:hover {
     font-size: 0.78rem;
 }
 
+.group-type {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    letter-spacing: 0.03em;
+}
+
+.badge-pdf {
+    background-color: #1e3a5f;
+    color: #60a5fa;
+}
+
+.badge-xml {
+    background-color: #1a3a2a;
+    color: #34d399;
+}
+
 .group-label {
     color: #94a3b8;
-    width: 100px;
+    width: 90px;
     flex-shrink: 0;
 }
 
@@ -176,4 +195,24 @@ a:hover {
 
 .group-done .group-bar-fill {
     background-color: #10b981;
+}
+
+.group-cancel {
+    background: none;
+    border: none;
+    color: #475569;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0 2px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.group-cancel:hover {
+    color: #f87171;
+}
+
+.group-cancel-placeholder {
+    width: 14px;
+    flex-shrink: 0;
 }

@@ -15,6 +15,15 @@ window.onload = function () {
         chrome.runtime.sendMessage({ action: "CLEAR" });
     };
 
+    // Cancelar grupo individual — event delegation sobre el div de grupos
+    document.getElementById("grupos").addEventListener("click", function (e) {
+        var btn = e.target.closest(".group-cancel");
+        if (btn) {
+            var groupIndex = parseInt(btn.getAttribute("data-index"), 10);
+            chrome.runtime.sendMessage({ action: "CANCEL_GROUP", groupIndex: groupIndex });
+        }
+    });
+
     document.getElementById("analizar").onclick = function () {
         chrome.tabs.create({ url: "https://analizador-cfdi.netlify.app/" });
     };
@@ -98,12 +107,18 @@ function renderState(state) {
     // Desglose por mes
     if (state.groups && state.groups.length > 0) {
         var html = state.groups.map(function (g) {
-            var pct  = g.total > 0 ? Math.round((g.done / g.total) * 100) : 0;
-            var done = g.done === g.total;
-            return "<div class='group-row" + (done ? " group-done" : "") + "'>" +
+            var pct       = g.total > 0 ? Math.round((g.done / g.total) * 100) : 0;
+            var isDone    = g.done === g.total;
+            var typeClass = g.type === "pdf" ? "badge-pdf" : "badge-xml";
+            var cancelBtn = g.cancellable
+                ? "<button class='group-cancel' data-index='" + g.index + "' title='Cancelar'>&#x2715;</button>"
+                : "<span class='group-cancel-placeholder'></span>";
+            return "<div class='group-row" + (isDone ? " group-done" : "") + "'>" +
+                "<span class='group-type " + typeClass + "'>" + g.type.toUpperCase() + "</span>" +
                 "<span class='group-label'>" + g.label + "</span>" +
                 "<span class='group-count'>" + g.done + " / " + g.total + "</span>" +
                 "<div class='group-bar'><div class='group-bar-fill' style='width:" + pct + "%'></div></div>" +
+                cancelBtn +
                 "</div>";
         }).join("");
         gruposDiv.innerHTML    = html;
